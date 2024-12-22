@@ -39,12 +39,21 @@ fi
 
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
-# Avoid depending on C code since we don't need it.
+# avoid depending on C code since we don't need it
 export CGO_ENABLED=0
 export TARGET_OS=freebsd
 export TARGET_ARCH=amd64
 
 bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
+
+# extend go linux build constraint to unix
+mod_file="$BUILD_DIR/diagnostic/network/collector_unix.go"
+if [ ! -f "$mod_file" ]; then
+    echo "Error: File '$mod_file' not found!"
+    exit 1
+fi
+sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$mod_file"
+
 make -C "$BUILD_DIR" cloudflared
 
 executable_name="cloudflared-$TARGET_OS-$latest_version"
