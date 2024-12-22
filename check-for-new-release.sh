@@ -16,6 +16,19 @@ SOURCE_ROOT=$(jq -r '.projects.cloudflared.sourceRoot' angular.json)
 OUTPUT_DIR=binaries
 RELEASE_INFO_PATH="${SOURCE_ROOT}/release-info.json"
 
+# extend go linux build constraint to unix
+update_build_tags() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "Error: File '$file' not found!"
+        exit 1
+    fi
+    if grep -q '^//go:build.*\blinux\b' "$file"; then
+        sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$file"
+        echo "Updated file to include unix build constraint: $file"
+    fi
+}
+
 response=$(curl --fail-with-body --silent --show-error -L \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -46,13 +59,8 @@ export TARGET_ARCH=amd64
 
 bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
 
-# extend go linux build constraint to unix
-mod_file="$BUILD_DIR/diagnostic/network/collector_unix.go"
-if [ ! -f "$mod_file" ]; then
-    echo "Error: File '$mod_file' not found!"
-    exit 1
-fi
-sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$mod_file"
+update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
+update_build_tags "$BUILD_DIR/diagnostic/system_collector_linux.go"
 
 make -C "$BUILD_DIR" cloudflared
 
