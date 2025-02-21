@@ -51,7 +51,9 @@ then
 fi
 
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
-
+cd $BUILD_DIR
+wget https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
+git  apply --check  freebsd.patch
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
 export TARGET_OS=freebsd
