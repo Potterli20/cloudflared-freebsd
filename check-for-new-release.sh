@@ -53,7 +53,7 @@ fi
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
 #$BUILD_DIR/freebsd.patch
-wget -o "$BUILD_DIR/freebsd.patch"   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
+wget -O "$BUILD_DIR/freebsd.patch"   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
 cd "$BUILD_DIR"
 patch -p1<  freebsd.patch
 
@@ -64,8 +64,8 @@ export TARGET_ARCH=amd64
 
 bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
 
-update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
-update_build_tags "$BUILD_DIR/diagnostic/system_collector_linux.go"
+#update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
+#update_build_tags "$BUILD_DIR/diagnostic/system_collector_linux.go"
 
 make -C "$BUILD_DIR" cloudflared
 
