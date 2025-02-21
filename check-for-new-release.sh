@@ -47,13 +47,16 @@ tag_name=$(<<<"$response" jq -r '.tag_name')
 # Clone the repository with the specific tag
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
+# Navigate to build directory
+cd "$BUILD_DIR"
+
 # Download the patch file
-wget -O "$BUILD_DIR/freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
+wget -O "freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
 
 # Apply the patch with different -p options, automatically accepting the patch
-echo "y" | patch -p1 < "$BUILD_DIR/freebsd.patch" || \
-echo "y" | patch -p0 < "$BUILD_DIR/freebsd.patch" || \
-echo "y" | patch -p2 < "$BUILD_DIR/freebsd.patch" || \
+echo "y" | patch -p1 < "freebsd.patch" || \
+echo "y" | patch -p0 < "freebsd.patch" || \
+echo "y" | patch -p2 < "freebsd.patch" || \
 (echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
 
 # Set environment variables to avoid depending on C code
@@ -62,29 +65,32 @@ export TARGET_OS=freebsd
 export TARGET_ARCH=amd64
 
 # Check if the install script exists
-if [ ! -f "$BUILD_DIR/.teamcity/install-cloudflare-go.sh" ]; then
+if [ ! -f ".teamcity/install-cloudflare-go.sh" ]; then
   echo "Error: install-cloudflare-go.sh script not found!"
   exit 1
 fi
 
 # Run the install script
-bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
+bash ".teamcity/install-cloudflare-go.sh"
 
 # Build the project
-make -C "$BUILD_DIR" cloudflared
+make cloudflared
 
 # Move the built executable
 executable_name="cloudflared-$TARGET_OS-$latest_version"
-executable_path="${BUILD_DIR}/$executable_name"
-mv "${BUILD_DIR}/cloudflared" "$executable_path"
+executable_path="cloudflared"
+mv "$executable_path" "../$executable_name"
+
+# Navigate back to the source root
+cd ..
 
 # Create archive and checksum
 output_basename_path="${OUTPUT_DIR}/$executable_name"
 output_archive_path="${output_basename_path}.7z"
 output_sha1_path="${output_basename_path}.sha1"
 
-7z a -mx=9 "${SOURCE_ROOT}/$output_archive_path" "$executable_path"
-shasum -a 1 "$executable_path" | awk '{ printf $1 }' > "${SOURCE_ROOT}/$output_sha1_path"
+7z a -mx=9 "$output_archive_path" "$executable_name"
+shasum -a 1 "$executable_name" | awk '{ printf $1 }' > "$output_sha1_path"
 
 # Update release information
 release_info=$(cat "$RELEASE_INFO_PATH")
