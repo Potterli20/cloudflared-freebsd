@@ -54,7 +54,8 @@ git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$B
 
 #$BUILD_DIR/freebsd.patch
 wget -o "$BUILD_DIR/freebsd.patch"   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
-git  apply --check  "$BUILD_DIR/freebsd.patch"
+cd "$BUILD_DIR"
+patch -p1<  freebsd.patch
 
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
