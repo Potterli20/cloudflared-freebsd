@@ -17,17 +17,17 @@ OUTPUT_DIR=binaries
 RELEASE_INFO_PATH="${SOURCE_ROOT}/release-info.json"
 
 # extend go linux build constraint to unix
-update_build_tags() {
-    local file="$1"
-    if [ ! -f "$file" ]; then
-        echo "Error: File '$file' not found!"
-        exit 1
-    fi
-    if grep -q '^//go:build.*\blinux\b' "$file"; then
-        sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$file"
-        echo "Updated file to include unix build constraint: $file"
-    fi
-}
+#update_build_tags() {
+#    local file="$1"
+#    if [ ! -f "$file" ]; then
+#        echo "Error: File '$file' not found!"
+#        exit 1
+#    fi
+#    if grep -q '^//go:build.*\blinux\b' "$file"; then
+#        sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$file"
+#        echo "Updated file to include unix build constraint: $file"
+#    fi
+#}
 
 response=$(curl --fail-with-body --silent --show-error -L \
   -H "Accept: application/vnd.github+json" \
@@ -52,15 +52,27 @@ fi
 
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
+# Navigate to build directory
+cd "$BUILD_DIR"
+
+# Download the patch file
+wget -O "freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
+
+# Apply the patch with different -p options, automatically accepting the patch
+echo "y" | patch -p1 < "freebsd.patch" || \
+echo "y" | patch -p0 < "freebsd.patch" || \
+echo "y" | patch -p2 < "freebsd.patch" || \
+(echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
+
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
 export TARGET_OS=freebsd
 export TARGET_ARCH=amd64
 
-bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
+bash ".teamcity/install-cloudflare-go.sh"
 
-update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
-update_build_tags "$BUILD_DIR/diagnostic/system_collector_linux.go"
+#update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
+#update_build_tags "$BUILD_DIR/diagnostic/system_collector_linux.go"
 
 make -C "$BUILD_DIR" cloudflared
 
