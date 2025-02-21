@@ -17,17 +17,17 @@ OUTPUT_DIR=binaries
 RELEASE_INFO_PATH="${SOURCE_ROOT}/release-info.json"
 
 # extend go linux build constraint to unix
-update_build_tags() {
-    local file="$1"
-    if [ ! -f "$file" ]; then
-        echo "Error: File '$file' not found!"
-        exit 1
-    fi
-    if grep -q '^//go:build.*\blinux\b' "$file"; then
-        sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$file"
-        echo "Updated file to include unix build constraint: $file"
-    fi
-}
+#update_build_tags() {
+#    local file="$1"
+#    if [ ! -f "$file" ]; then
+#        echo "Error: File '$file' not found!"
+#        exit 1
+#    fi
+#    if grep -q '^//go:build.*\blinux\b' "$file"; then
+#        sed -i '/^\/\/go:build/ s/\blinux\b/unix/' "$file"
+#        echo "Updated file to include unix build constraint: $file"
+#    fi
+#}
 
 response=$(curl --fail-with-body --silent --show-error -L \
   -H "Accept: application/vnd.github+json" \
@@ -53,8 +53,8 @@ fi
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
 #$BUILD_DIR/freebsd.patch
-wget -o $BUILD_DIR/freebsd.patch   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
-git  apply --check  $BUILD_DIR/freebsd.patch
+wget -o "$BUILD_DIR/freebsd.patch"   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
+git  apply --check  "$BUILD_DIR/freebsd.patch"
 
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
