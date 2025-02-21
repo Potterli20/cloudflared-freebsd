@@ -50,10 +50,10 @@ git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$B
 # Download the patch file
 wget -O "$BUILD_DIR/freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
 
-# Apply the patch with different -p options
-patch -p1 < "$BUILD_DIR/freebsd.patch" || \
-patch -p0 < "$BUILD_DIR/freebsd.patch" || \
-patch -p2 < "$BUILD_DIR/freebsd.patch" || \
+# Apply the patch with different -p options, automatically accepting the patch
+echo "y" | patch -p1 < "$BUILD_DIR/freebsd.patch" || \
+echo "y" | patch -p0 < "$BUILD_DIR/freebsd.patch" || \
+echo "y" | patch -p2 < "$BUILD_DIR/freebsd.patch" || \
 (echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
 
 # Set environment variables to avoid depending on C code
