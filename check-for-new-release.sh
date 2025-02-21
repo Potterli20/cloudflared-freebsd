@@ -52,16 +52,22 @@ fi
 
 git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$BUILD_DIR"
 
-#$BUILD_DIR/freebsd.patch
-wget -O "$BUILD_DIR/freebsd.patch"   https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch 
-cd "$BUILD_DIR"
-patch -p1<  freebsd.patch
+# Downloading the patch
+wget -O "$BUILD_DIR/freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
+patch -p1 < "$BUILD_DIR/freebsd.patch"
 
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
 export TARGET_OS=freebsd
 export TARGET_ARCH=amd64
 
+# Check if the install-cloudflare-go.sh script exists
+if [ ! -f "$BUILD_DIR/.teamcity/install-cloudflare-go.sh" ]; then
+  echo "Error: install-cloudflare-go.sh script not found!"
+  exit 1
+fi
+
+# Run the install script
 bash "$BUILD_DIR/.teamcity/install-cloudflare-go.sh"
 
 #update_build_tags "$BUILD_DIR/diagnostic/network/collector_unix.go"
