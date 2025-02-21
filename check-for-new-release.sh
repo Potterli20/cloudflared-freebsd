@@ -54,7 +54,14 @@ git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$B
 
 # Downloading the patch
 wget -O "$BUILD_DIR/freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
-patch -p0 < "$BUILD_DIR/freebsd.patch"
+# Attempt using -p0
+patch -p0 < "$BUILD_DIR/freebsd.patch" || \
+# Attempt using -p1
+patch -p1 < "$BUILD_DIR/freebsd.patch" || \
+# Attempt using -p2
+patch -p2 < "$BUILD_DIR/freebsd.patch" || \
+# Provide an error message if all attempts fail
+(echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
 
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
