@@ -54,14 +54,20 @@ git clone --branch "$tag_name" https://github.com/cloudflare/cloudflared.git "$B
 
 # Downloading the patch
 wget -O "$BUILD_DIR/freebsd.patch" https://raw.githubusercontent.com/robvanoostenrijk/cloudflared-freebsd/refs/heads/master/freebsd.patch
-# Attempt using -p0
-patch -p0 < "$BUILD_DIR/freebsd.patch" || \
-# Attempt using -p1
-patch -p1 < "$BUILD_DIR/freebsd.patch" || \
-# Attempt using -p2
-patch -p2 < "$BUILD_DIR/freebsd.patch" || \
-# Provide an error message if all attempts fail
-(echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
+
+# Verify if paths in the patch file match the directory structure
+if grep -q 'diagnostic/network/collector_unix.go' "$BUILD_DIR/freebsd.patch" && \
+   grep -q 'diagnostic/network/collector_unix_test.go' "$BUILD_DIR/freebsd.patch" && \
+   grep -q 'diagnostic/system_collector_macos.go' "$BUILD_DIR/freebsd.patch"; then
+  # Attempt using different -p options
+  patch -p0 < "$BUILD_DIR/freebsd.patch" || \
+  patch -p1 < "$BUILD_DIR/freebsd.patch" || \
+  patch -p2 < "$BUILD_DIR/freebsd.patch" || \
+  (echo "Error: Failed to apply patch. Please check the patch file and directory structure." && exit 1)
+else
+  echo "Error: The paths in the patch file do not match the directory structure."
+  exit 1
+fi
 
 # avoid depending on C code since we don't need it
 export CGO_ENABLED=0
