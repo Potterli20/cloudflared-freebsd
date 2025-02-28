@@ -250,5 +250,12 @@
     "releaseDate": "2025-02-03T18:39:00Z",
     "binary7zipPath": "binaries/cloudflared-freebsd-2025.2.0.7z",
     "binarySHA1Path": "binaries/cloudflared-freebsd-2025.2.0.sha1"
+  },
+  "2025.2.1": {
+    "buildDate": "2025-02-28T08:53:29+00:00",
+    "platform": "FreeBSD",
+    "releaseDate": "2025-02-26T16:44:32Z",
+    "binary7zipPath": "binaries/cloudflared-freebsd-2025.2.1.7z",
+    "binarySHA1Path": "binaries/cloudflared-freebsd-2025.2.1.sha1"
   }
 }
